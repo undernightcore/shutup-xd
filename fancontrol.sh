@@ -530,8 +530,7 @@ do
         #Logtype logic end.
 
         #Temp comparisons
-        if [ $CPUcount -eq 0 ]; then
-        else
+        if [ $CPUcount -gt 0 ]; then
                 if [ $vTEMP -ge $MAXTEMP ]; then
                         setfanspeed "$vTEMP" $MAXTEMP "$E_value" 0
                         echo "!! CPU MODE : Temperature Critical trigger!!"
@@ -545,7 +544,7 @@ do
                                         break
                                 fi
                         done
-                fi
+                fi 
         fi
 
         sleep 60
