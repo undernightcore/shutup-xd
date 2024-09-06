@@ -279,51 +279,6 @@ function setfanspeed () {
 re='^[0-9]+$'
 ren='^[+-]?[0-9]+?$'
 
-if [[ "$CPUdelta" =~ $ren ]]; then
-        if [ "$CPUdelta" -le "0" ]; then
-                echo "CPUdelta parameter invalid, must be greater than 0!"
-                setfanspeed XX XX "$E_value" 1
-        fi
-else
-        echo "CPUdelta parameter invalid, not a number!"
-        setfanspeed XX XX "$E_value" 1
-fi
-
-if [ "$TEMPgov" != 1 ] && [ "$TEMPgov" != 0 ]; then
-        echo "TEMPgov parameter invalid, can only be 0 or 1!"
-        setfanspeed XX XX "$E_value" 1
-fi
-
-if [[ "$Logtype" =~ $ren ]]; then
-        if [ "$Logtype" -lt 0 ] || [ "$Logtype" -gt 3 ]; then
-                echo "Logtype parameter invalid, must be in 0-3 range!"
-                setfanspeed XX XX "$E_value" 1
-        fi
-else
-        echo "Logtype parameter invalid, not a number!"
-        setfanspeed XX XX "$E_value" 1
-fi
-
-if [[ "$EXHTEMP_MAX" =~ $ren ]]; then
-        if [ "$EXHTEMP_MAX" -lt 0 ]; then
-                echo "EXHTEMP_MAX parameter invalid, can't be negative!"
-                setfanspeed XX XX "$E_value" 1
-        fi
-else
-        echo "EXHTEMP_MAX parameter invalid, not a number!"
-        setfanspeed XX XX "$E_value" 1
-fi
-
-if [[ $MAX_MOD =~ $ren ]]; then
-        if [ "$MAX_MOD" -lt 0 ]; then
-                echo "MAX_MOD parameter invalid, can't be negative!"
-                setfanspeed XX XX "$E_value" 1
-        fi
-else
-        echo "MAX_MOD parameter invalid, not a number!"
-        setfanspeed XX XX "$E_value" 1
-fi
-
 while true
 do
         #Counting CPU Fan speed steps and setting max value
