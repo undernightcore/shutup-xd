@@ -3,3 +3,5 @@ services:
   app:
     build: .
     restart: unless-stopped
+    devices:
+      - /dev/ipmi0:/dev/ipmi0:rw
