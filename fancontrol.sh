@@ -286,30 +286,11 @@ do
         do
                 inloopstep="TEMP_STEP$i"
                 inloopspeed="FST$i"
-                if [[ ! -z "${!inloopspeed}" ]] && [[ ! -z "${!inloopstep}" ]]; then
-                        if ! [[ "${!inloopstep}" =~ $ren ]]; then
-                                echo "Butterfinger failsafe: CPU Temperature step n°$i isn't a number!"
-                                setfanspeed XX XX "$E_value" 1
-                        fi
-                        if [[ "${!inloopspeed}" =~ $ren ]]; then
-                                if [[ "${!inloopspeed}" -lt 0 ]]; then
-                                        echo "Butterfinger failsafe: Fan speed step n°$i is negative!"
-                                        setfanspeed XX XX "$E_value" 1
-                                fi
-
-                        else
-                                echo "Butterfinger failsafe: Fan speed step n°$i isn't a number!"
-                                setfanspeed XX XX "$E_value" 1
-                        fi
-                else
+                if [[ -z "${!inloopspeed}" ]] || [[ -z "${!inloopstep}" ]]; then
                         inloopmaxstep="TEMP_STEP$((i-1))"
-                if [ $((i-1)) -le 0 ]; then
-                                echo "Butterfinger failsafe: no CPU stepping found!!"
-                                setfanspeed XX XX "$E_value" 1
-                        fi
                         MAXTEMP="${!inloopmaxstep}"
                         TEMP_STEP_COUNT=$i
-                        break
+                        break                
                 fi
         done
 
@@ -319,40 +300,11 @@ do
                 inloopstep="AMBTEMP_STEP$i"
                 inloopspeed="AMBTEMP_noCPU_FS_STEP$i"
                 inloopmod="AMBTEMP_MOD_STEP$i"
-                if [[ ! -z "${!inloopspeed}" ]] && [[ ! -z "${!inloopmod}" ]] && [[ ! -z "${!inloopstep}" ]]; then
-                        if ! [[ "${!inloopstep}" =~ $ren ]]; then
-                                echo "Butterfinger failsafe: Ambient temperature step n°$i isn't a number!"
-                                setfanspeed XX XX "$E_value" 1
-                        fi
-                        if [[ "${!inloopmod}" =~ $ren ]]; then
-                                if [[ "${!inloopmod}" -lt 0 ]]; then
-                                        echo "Beware: Ambient modifier for CPU temp step n°$i is negative!"
-                                        echo "Proceeding..."
-                                fi
-
-                        else
-                                echo "Butterfinger failsafe: Ambient modifier for CPU temp step n°$i isn't a number!"
-                                setfanspeed XX XX "$E_value" 1
-                        fi
-                        if [[ "${!inloopspeed}" =~ $ren ]]; then
-                                if [[ "${!inloopspeed}" -lt 0 ]]; then
-                                        echo "Butterfinger failsafe: Ambient NO CPU fan speed step n°$i is negative!"
-                                        setfanspeed XX XX "$E_value" 1
-                                fi
-
-                        else
-                                echo "Butterfinger failsafe: Ambient NO CPU fan speed step n°$i isn't a number!"
-                                setfanspeed XX XX "$E_value" 1
-                        fi
-                else
+                if [[ -z "${!inloopspeed}" ]] || [[ -z "${!inloopmod}" ]] || [[ -z "${!inloopstep}" ]]; then
                         inloopmaxstep="AMBTEMP_STEP$((i-1))"
-                if [ $((i-1)) -le 0 ]; then
-                                echo "Butterfinger failsafe: no Ambient stepping found!!"
-                                setfanspeed XX XX "$E_value" 1
-                        fi
                         AMBTEMP_MAX="${!inloopmaxstep}"
                         AMB_STEP_COUNT=$i
-                        break
+                        break                        
                 fi
         done
 
@@ -380,6 +332,7 @@ do
                 CPUcount=0
         else
                 if [[ ! -z "$CPUTEMP0" ]]; then #Infinite CPU number adding, if you pull individual CPU cores from lm-sensors or something
+                        TEMPadd=0
                         for ((i=0; i>=0 ; i++))
                         do
                                 CPUcountloop="CPUTEMP$i"
@@ -436,6 +389,7 @@ do
                 CPUdeltatest=1
                 CPUn=$CPUh
         fi
+
         #Ambient temperature modifier when CPU temps are available.
         AMBTEMP=$(echo "$DATADUMP" |grep "$AMBIENT_ID" |grep degrees |grep -Po '\d{2}' | tail -1)
         if [ $CPUcount != 0 ]; then
@@ -456,6 +410,7 @@ do
                         fi
                 fi
         fi
+        
         #Exhaust temperature modifier when CPU temps are available and Checks for Delta Mode and Ambient mode
         EXHTEMP=$(echo "$DATADUMP" |grep "$EXHAUST_ID" |grep degrees |grep -Po '\d{2}' | tail -1)
         if [ $CPUcount != 0 ]; then
