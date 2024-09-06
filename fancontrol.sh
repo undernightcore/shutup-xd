@@ -219,28 +219,7 @@ TEMPgov=0
 #Maximum allowed delta in TEMPgov0. If exceeded, switches profile to highest value.
 CPUdelta=15
 
-#These values are used as steps for the intake temps.
-#If Ambient temp is within range of $AMBTEMP_STEP#, it inflates the CPUs' temp average by AMBTEMP_STEP#_MOD when checked against TEMP_STEP#s.
-#If Ambient temp is above $AMBTEMP_MAX, which is step 4, a temp modifier of 69 should be well enough to make the script select auto-fan mode.
-#AMBTEMP_STEPX_noCPU_Fanspeed : Some servers don't report their CPU temps. In that case Fan speed can only be adjusted using Ambient temperature.
-#In case of lack of CPU temps in IPMI, Fan speed values are to be defined here as for each step in the AMBTEMP_noCPU_FS_STEP# value, in % between 0 and 100.
-
-AMBTEMP_STEP0=20
-AMBTEMP_MOD_STEP0=0
-AMBTEMP_noCPU_FS_STEP0=8
-
-AMBTEMP_STEP1=21
-AMBTEMP_MOD_STEP1=10
-AMBTEMP_noCPU_FS_STEP1=15
-
-AMBTEMP_STEP2=24
-AMBTEMP_MOD_STEP2=15
-AMBTEMP_noCPU_FS_STEP2=20
-
-AMBTEMP_STEP3=26
-AMBTEMP_MOD_STEP3=20
-AMBTEMP_noCPU_FS_STEP3=30
-
+#Max offset applied to CPU temps
 MAX_MOD=69
 
 #If your exhaust temp is reaching 65°C, you've been cooking your server. It needs the woosh.
@@ -291,20 +270,6 @@ do
                         MAXTEMP="${!inloopmaxstep}"
                         TEMP_STEP_COUNT=$i
                         break                
-                fi
-        done
-
-        #Counting Ambiant Fan speed and MOD steps and setting max value
-        for ((i=0; i>=0 ; i++))
-        do
-                inloopstep="AMBTEMP_STEP$i"
-                inloopspeed="AMBTEMP_noCPU_FS_STEP$i"
-                inloopmod="AMBTEMP_MOD_STEP$i"
-                if [[ -z "${!inloopspeed}" ]] || [[ -z "${!inloopmod}" ]] || [[ -z "${!inloopstep}" ]]; then
-                        inloopmaxstep="AMBTEMP_STEP$((i-1))"
-                        AMBTEMP_MAX="${!inloopmaxstep}"
-                        AMB_STEP_COUNT=$i
-                        break                        
                 fi
         done
 
@@ -361,6 +326,7 @@ do
 
                 fi
         fi
+
         #CPU Find lowest and highest CPU temps
         if [ "$CPUcount" -gt 1 ]; then
                 for ((i=0; i<CPUcount; i++)) #General solution to finding the highest number with a shitty shell loop
@@ -380,6 +346,7 @@ do
                 fi
                 done
         fi
+
         if [ $TEMPgov -eq 1 ] || [ $((CPUh-CPUl)) -gt $CPUdelta ]; then
                 echo "!! CPU DELTA Exceeded !!"
                 echo "Lowest : $CPUl°C"
@@ -390,26 +357,8 @@ do
                 CPUn=$CPUh
         fi
 
-        #Ambient temperature modifier when CPU temps are available.
+        #Intake temperature
         AMBTEMP=$(echo "$DATADUMP" |grep "$AMBIENT_ID" |grep degrees |grep -Po '\d{2}' | tail -1)
-        if [ $CPUcount != 0 ]; then
-                if [[ ! -z "$AMBTEMP" ]]; then
-                        if [ "$AMBTEMP" -ge $AMBTEMP_MAX ]; then
-                                echo "Intake temp is very high!! : $AMBTEMP °C!"
-                                TEMPMOD=$MAX_MOD
-                        else
-                                for ((i=0; i<AMB_STEP_COUNT; i++))
-                                do
-                                        AMBTEMP_STEPloop="AMBTEMP_STEP$i"
-                                        if [ "$AMBTEMP" -le "${!AMBTEMP_STEPloop}" ]; then
-                                                AMBTEMP_MOD_STEPloop="AMBTEMP_MOD_STEP$i"
-                                                TEMPMOD="${!AMBTEMP_MOD_STEPloop}"
-                                                break
-                                        fi
-                                done
-                        fi
-                fi
-        fi
         
         #Exhaust temperature modifier when CPU temps are available and Checks for Delta Mode and Ambient mode
         EXHTEMP=$(echo "$DATADUMP" |grep "$EXHAUST_ID" |grep degrees |grep -Po '\d{2}' | tail -1)
