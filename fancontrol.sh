@@ -4,13 +4,6 @@
 #(Possible values being a number between 80 and 100, or "auto")
 E_value="auto"
 
-function gracefull_exit () {
-  setfanspeed XX XX "$E_value" 2
-  exit 0
-}
-
-trap 'gracefull_exit' SIGQUIT SIGKILL SIGTERM
-
 #IPMI IDs
 CPUID0=0Eh
 CPUID1=0Fh
@@ -228,6 +221,10 @@ EXHTEMP_MAX=65
 #Hexadecimal conversion and IPMI command into a function 
 ipmifanctl=(ipmitool -I open raw 0x30 0x30)
 
+#Failsafe = Parameter check
+re='^[0-9]+$'
+ren='^[+-]?[0-9]+?$'
+
 function setfanspeed () { 
     TEMP_Check=$1
     TEMP_STEP=$2
@@ -254,9 +251,12 @@ function setfanspeed () {
      fi
 }
 
-#Failsafe = Parameter check
-re='^[0-9]+$'
-ren='^[+-]?[0-9]+?$'
+function gracefull_exit () {
+  setfanspeed XX XX "$E_value" 2
+  exit 0
+}
+
+trap 'gracefull_exit' SIGQUIT SIGKILL SIGTERM
 
 while true
 do
