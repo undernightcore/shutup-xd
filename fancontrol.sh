@@ -260,7 +260,7 @@ trap 'gracefull_exit' SIGQUIT SIGKILL SIGTERM
 
 while true
 do
-        sleep 60 &
+        sleep 30 &
         SLEEP_PROCESS_PID=$!
         
         #Counting CPU Fan speed steps and setting max value
